@@ -370,7 +370,7 @@ if has_sklearn:
                                if self.gamma is not None else 1.0 / X.shape[1])
                 self.affinity_matrix_ = rbf_kernel(X, gamma=self.gamma_)
                 return self.affinity_matrix_
-            if self.affinity in ['markov', 'cauchy']:
+            if self.affinity in ['markov', 'markov2', 'cauchy']:
                 from .dist import compute_affinity
                 self.affinity_matrix_ = compute_affinity(X,
                                                          method=self.affinity,
@@ -406,7 +406,7 @@ if has_sklearn:
             random_state = check_random_state(self.random_state)
             if isinstance(self.affinity, (str,)):
                 if self.affinity not in set(("nearest_neighbors", "rbf",
-                                             "markov", "cauchy",
+                                             "markov", "markov2", "cauchy",
                                              "precomputed")):
                     raise ValueError(("%s is not a valid affinity. Expected "
                                       "'precomputed', 'rbf', 'nearest_neighbors' "

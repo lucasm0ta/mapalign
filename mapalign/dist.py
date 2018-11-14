@@ -145,12 +145,39 @@ def compute_affinity(X, method='markov', eps=None, metric='euclidean'):
     True
     """
     import numpy as np
-    D = squareform(pdist(X, metric=metric))
+    radius = 0.5
+
+    # Is on list
+    dist = pdist(X, metric=metric)
+    
+    # Set as square
+    D = squareform(dist)
+
     if eps is None:
         k = int(max(2, np.round(D.shape[0] * 0.01)))
         eps = 2 * np.median(np.sort(D, axis=0)[k+1, :])**2
     if method == 'markov':
         affinity_matrix = np.exp(-(D * D) / eps)
+    elif method == 'markov2':
+        is_in = D[:,:] < radius
+        is_in_quant = is_in.sum(axis=0)
+        min_v = is_in_quant.min()
+        max_v = is_in_quant.max()
+
+        S = (is_in_quant - min_v)/(max_v - min_v)
+        aux = -(D * D)
+        aux_shape = aux.shape
+        for i in range(aux_shape[0]):
+            #Divide columns
+            # aux[:, i] /= (0.01 + S[i])
+            #Divide rows
+            # aux[i, :] /= (0.01 + S[i])
+
+            for j in range(i, aux_shape[1]):
+                if (i != j):
+                    aux[i, j] /= (1 + abs(S[i] - S[j]))
+                    aux[j, i] = aux[i, j]
+        affinity_matrix = np.exp(aux)
     elif method == 'cauchy':
         affinity_matrix = 1./(D * D + eps)
     else:
